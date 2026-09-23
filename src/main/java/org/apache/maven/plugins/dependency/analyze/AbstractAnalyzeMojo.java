@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.analyze;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -361,18 +360,26 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
 
         ignoredUsedUndeclared.addAll(filterDependencies(usedUndeclaredWithClasses.keySet(), ignoredDependencies));
+        usedUndeclaredWithClasses.keySet().removeAll(ignoredUsedUndeclared);
         ignoredUsedUndeclared.addAll(
                 filterDependencies(usedUndeclaredWithClasses.keySet(), ignoredUsedUndeclaredDependencies));
+        usedUndeclaredWithClasses.keySet().removeAll(ignoredUsedUndeclared);
 
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredDependencies));
+        unusedDeclared.removeAll(ignoredUnusedDeclared);
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredUnusedDeclaredDependencies));
+        unusedDeclared.removeAll(ignoredUnusedDeclared);
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, unconditionallyIgnoredDeclaredDependencies));
+        unusedDeclared.removeAll(ignoredUnusedDeclared);
 
         if (ignoreAllNonTestScoped) {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, new String[] {"*"}));
+            nonTestScope.removeAll(ignoredNonTestScope);
         } else {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredDependencies));
+            nonTestScope.removeAll(ignoredNonTestScope);
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredNonTestScopedDependencies));
+            nonTestScope.removeAll(ignoredNonTestScope);
         }
 
         boolean reported = false;
@@ -565,10 +572,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
         Set<Artifact> result = new LinkedHashSet<>();
 
-        for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
-            Artifact artifact = it.next();
+        for (Artifact artifact : artifacts) {
             if (!filter.include(artifact)) {
-                it.remove();
                 result.add(artifact);
             }
         }
